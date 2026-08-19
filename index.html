@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="ShortHub — 주제 한 줄로 세로 쇼츠를 만드는 AI 쇼츠 제작소">
+<meta name="description" content="ShortHub — 주제 한 줄로 세로 쇼츠를 만드는 브라우저 쇼츠 스튜디오">
 <link rel="icon" type="image/jpeg" href="assets/logo.jpg">
-<title>ShortHub | AI 쇼츠 제작소</title>
+<title>ShortHub | AI 쇼츠 스튜디오</title>
 <style>:root {
   --ink: #171717;
   --muted: #5f5f66;
@@ -459,130 +459,383 @@ footer {
   .archive-profile, .archive-board { box-shadow: none; }
   .archive-post[hidden] { display: block; }
 }
-/* ShortHub 브랜드 오버라이드 */
-.archive-brand-logo, .archive-avatar-logo { object-fit: cover; object-position: center; }
-.archive-brand-mark.archive-brand-logo { background: #fff; box-shadow: 0 7px 18px rgba(49,130,246,.25); }
-.archive-avatar.archive-avatar-logo { background: #fff; box-shadow: 0 18px 36px rgba(49,130,246,.24); }
+/* ===== ShortHub 스튜디오 ===== */
+.archive-brand-mark.archive-brand-logo { background:#fff; overflow:hidden; }
+.archive-brand-mark.archive-brand-logo img { width:100%; height:100%; object-fit:cover; }
+.archive-avatar.archive-avatar-logo { background:#fff; overflow:hidden; padding:0; }
+.archive-avatar.archive-avatar-logo img { width:100%; height:100%; object-fit:cover; border-radius:32px; }
+.studio-form { padding:28px; border:1px solid #edf0f2; border-radius:22px; background:#fff; box-shadow:0 14px 38px rgba(15,23,42,.045); }
+.studio-form label { display:block; font-size:13px; font-weight:800; color:#2a3441; margin:20px 0 8px; letter-spacing:-.01em; }
+.studio-form label:first-child { margin-top:0; }
+.studio-form textarea { width:100%; min-height:110px; resize:vertical; border:1px solid #e5e8eb; border-radius:12px; padding:13px 14px; font:inherit; font-size:15px; line-height:1.6; color:#191f28; background:#fbfcfd; transition:.18s; }
+.studio-form textarea:focus { outline:none; border-color:#3182f6; box-shadow:0 0 0 4px rgba(49,130,246,.1); background:#fff; }
+.pill-scale { display:flex; gap:8px; flex-wrap:wrap; }
+.pill { border:1px solid #e5e8eb; border-radius:999px; padding:8px 16px; font-size:13px; font-weight:800; color:#5a6472; background:#fff; cursor:pointer; transition:.18s; }
+.pill.is-active { color:#fff; background:#3182f6; border-color:#3182f6; box-shadow:0 7px 14px rgba(49,130,246,.2); }
+.studio-actions { display:flex; gap:12px; margin-top:24px; flex-wrap:wrap; }
+.btn-primary, .btn-ghost { min-height:48px; display:inline-flex; align-items:center; justify-content:center; gap:9px; padding:0 20px; border-radius:13px; font-size:15px; font-weight:800; cursor:pointer; text-decoration:none; transition:.18s; }
+.btn-primary { color:#fff; background:#3182f6; border:0; box-shadow:0 10px 24px rgba(49,130,246,.22); }
+.btn-primary:hover { background:#1b64da; transform:translateY(-2px); }
+.btn-primary:disabled { opacity:.5; cursor:not-allowed; transform:none; }
+.btn-ghost { color:#4e5968; background:#fff; border:1px solid #e5e8eb; }
+.btn-ghost:hover { background:#f6f8fa; }
+.studio-progress { display:none; margin-top:20px; }
+.sbar { height:12px; border-radius:999px; background:#eef2f6; overflow:hidden; }
+.sbar > div { height:100%; width:0; border-radius:999px; background:linear-gradient(90deg,#4593ff,#1769e8); transition:width .25s ease; }
+.slabel { display:flex; justify-content:space-between; gap:12px; margin-top:9px; font-size:13px; color:#5a6472; }
+.slabel .pct { font-weight:900; color:#1b64da; font-variant-numeric:tabular-nums; }
+.studio-result { padding:28px; border:1px solid #edf0f2; border-radius:22px; background:#fff; box-shadow:0 14px 38px rgba(15,23,42,.045); margin-top:20px; }
+.phone { width:min(320px,100%); aspect-ratio:9/16; margin:18px auto 8px; border-radius:22px; overflow:hidden; background:#05070d; box-shadow:0 24px 60px rgba(15,23,42,.28); position:relative; }
+.phone video { width:100%; height:100%; object-fit:cover; display:block; background:#000; }
+.rate { text-align:center; font-size:13px; color:#6b7684; margin-top:4px; }
+.studio-note { display:flex; gap:11px; align-items:flex-start; padding:14px 16px; border:1px solid #dbe7f7; border-radius:12px; background:#f5f8fc; margin:18px 0; }
+.studio-note p { margin:0; color:#4e5968; font-size:13px; line-height:1.6; }
+.step-list { display:grid; gap:12px; margin-top:22px; }
+.step-row { display:flex; gap:14px; align-items:flex-start; padding:16px 18px; border:1px solid #edf0f2; border-radius:14px; background:#fff; }
+.step-num { width:32px; height:32px; display:grid; place-items:center; border-radius:10px; color:#fff; background:#3182f6; font-size:13px; font-weight:900; flex:0 0 auto; }
+.step-row h3 { margin:2px 0 4px; font-size:16px; }
+.step-row p { margin:0; color:#6b7684; font-size:13px; line-height:1.5; }
 </style>
 </head>
 <body class="archive-page">
-  <header class="archive-topbar">
-    <div class="archive-topbar-inner">
-      <a class="archive-brand" href="./" aria-label="ShortHub 홈">
-        <img class="archive-brand-mark archive-brand-logo" src="assets/logo.jpg" alt="ShortHub 로고" width="32" height="32">
-        <span>ShortHub</span>
-      </a>
-      <nav aria-label="주요 메뉴">
-        <a class="is-current" href="./">쇼츠 제작소</a>
-        <a href="https://github.com/jeremylee0213/shorthub" target="_blank" rel="noopener">GitHub</a>
-        <a href="#how">실행 안내</a>
-      </nav>
-    </div>
-  </header>
+<header class="archive-topbar">
+  <div class="archive-topbar-inner">
+    <a class="archive-brand" href="./" aria-label="ShortHub 홈">
+      <span class="archive-brand-mark archive-brand-logo"><img src="assets/logo.jpg" alt="" width="32" height="32"></span>
+      <span>ShortHub</span>
+    </a>
+    <nav aria-label="주요 메뉴">
+      <a class="is-current" href="./">쇼츠 스튜디오</a>
+      <a href="#how">만드는 법</a>
+      <a href="https://github.com/jeremylee0213/shorthub" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </div>
+</header>
 
-  <main class="archive-shell">
-    <section class="archive-profile" aria-labelledby="archive-title">
-      <img class="archive-avatar archive-avatar-logo" src="assets/logo.jpg" alt="ShortHub 마크" width="92" height="92">
-      <div class="archive-profile-copy">
-        <div class="archive-eyebrow">AI SHORTS STUDIO</div>
-        <h1 id="archive-title">ShortHub · AI 쇼츠 제작소</h1>
-        <p>주제 한 줄이면 세로 쇼츠가 완성됩니다. 글, 화면, 자막, 목소리, 배경음을 자동으로 붙이는 작업실입니다.</p>
-        <div class="archive-profile-meta">
-          <span>화면 비율 <b>9:16 쇼츠</b></span>
-          <span>인터페이스 <b>한국어</b></span>
-          <span>연동 <b>ChatGPT · Grok</b></span>
-        </div>
-      </div>
-      <a class="archive-primary-action" href="https://github.com/jeremylee0213/shorthub" target="_blank" rel="noopener">GitHub 저장소<i aria-hidden="true">↗</i></a>
-    </section>
-
-    <div class="archive-layout">
-      <aside class="archive-sidebar" aria-label="제작 안내와 흐름">
-        <section class="archive-side-card">
-          <div class="archive-side-label">ABOUT</div>
-          <h2>주제 한 줄이면<br>충분합니다.</h2>
-          <p>임원의 생각을 바로 쇼츠로 만듭니다. 기술 설정을 몰라도 자동으로 완성됩니다.</p>
-        </section>
-        <section class="archive-side-card archive-side-categories">
-          <div class="archive-side-label">MAKING</div>
-          <div class="archive-category-list">
-            <div class="archive-category"><span>1. 주제 적기</span><b>첫 단계</b></div>
-            <div class="archive-category"><span>2. 화면·소리·자막</span><b>자동</b></div>
-            <div class="archive-category"><span>3. 진행률 확인</span><b>단계+%</b></div>
-            <div class="archive-category"><span>4. 완성 영상</span><b>바로 재생</b></div>
-          </div>
-        </section>
-        <section class="archive-side-card archive-side-note">
-          <span class="archive-note-dot"></span>
-          <p>이 앱은 파이썬(Streamlit) 기반이라 GitHub Pages에서는 소개만 보여주고, 실제 제작은 내려받아 실행합니다.</p>
-        </section>
-      </aside>
-
-      <div class="archive-board" id="how">
-        <div class="archive-board-head">
-          <div>
-            <div class="archive-eyebrow">HOW TO RUN</div>
-            <h2>직접 실행하는 법</h2>
-            <p>이 컴퓨터에서 세 단계면 완성됩니다.</p>
-          </div>
-        </div>
-
-        <div class="archive-list-head"><span>단계</span><span>안내</span><span>비고</span></div>
-
-        <article class="archive-post">
-          <a class="archive-post-link" href="https://github.com/jeremylee0213/shorthub" target="_blank" rel="noopener">
-            <div class="archive-post-number">01</div>
-            <div class="archive-post-copy">
-              <div class="archive-post-meta"><span class="archive-post-category">준비</span><span>소스 받기</span></div>
-              <h2>저장소를 내려받습니다</h2>
-              <p>git clone 한 뒤 폴더로 들어가면 됩니다.</p>
-            </div>
-            <figure class="archive-post-cover archive-post-cover-fallback"><span>STEP</span><strong>CLONE</strong><small>짧고 간단</small></figure>
-          </a>
-        </article>
-
-        <article class="archive-post">
-          <a class="archive-post-link" href="#run">
-            <div class="archive-post-number">02</div>
-            <div class="archive-post-copy">
-              <div class="archive-post-meta"><span class="archive-post-category">실행</span><span>한 줄 명령</span></div>
-              <h2>sh webui.sh 를 실행합니다</h2>
-              <p>브라우저가 http://127.0.0.1:8501 을 자동으로 엽니다.</p>
-            </div>
-            <figure class="archive-post-cover archive-post-cover-fallback"><span>STEP</span><strong>RUN</strong><small>한 줄이면 끝</small></figure>
-          </a>
-        </article>
-
-        <article class="archive-post">
-          <a class="archive-post-link" href="#make">
-            <div class="archive-post-number">03</div>
-            <div class="archive-post-copy">
-              <div class="archive-post-meta"><span class="archive-post-category">제작</span><span>주제 입력</span></div>
-              <h2>주제를 적고 쇼츠 만들기를 누릅니다</h2>
-              <p>오른쪽에 진행률이 단계와 %로 보이고, 완성되면 바로 재생됩니다.</p>
-            </div>
-            <figure class="archive-post-cover archive-post-cover-fallback"><span>STEP</span><strong>MAKE</strong><small>진행률 표시</small></figure>
-          </a>
-        </article>
-
-        <article class="archive-post">
-          <a class="archive-post-link" href="#login">
-            <div class="archive-post-number">TIP</div>
-            <div class="archive-post-copy">
-              <div class="archive-post-meta"><span class="archive-post-category">로그인</span><span>편하게</span></div>
-              <h2>ChatGPT 로그인이 있는 맥은 키 없이 바로 씁니다</h2>
-              <p>설정에서 OpenAI를 고르면 자동 연결됩니다. Grok은 xAI 콘솔에서 키를 붙여넣습니다.</p>
-            </div>
-            <figure class="archive-post-cover archive-post-cover-fallback"><span>LOGIN</span><strong>ChatGPT</strong><small>Grok 연동</small></figure>
-          </a>
-        </article>
-
-        <footer class="archive-footer">
-          <span>ShortHub · AI 쇼츠 제작소</span>
-          <a href="https://github.com/jeremylee0213/shorthub" target="_blank" rel="noopener">저장소 보기 ↗</a>
-        </footer>
+<main class="archive-shell">
+  <section class="archive-profile" aria-labelledby="studio-title">
+    <div class="archive-avatar archive-avatar-logo"><img src="assets/logo.jpg" alt="ShortHub 마크" width="92" height="92"></div>
+    <div class="archive-profile-copy">
+      <div class="archive-eyebrow">AI SHORTS STUDIO</div>
+      <h1 id="studio-title">ShortHub · AI 쇼츠 스튜디오</h1>
+      <p>주제 한 줄이면 세로 쇼츠가 완성됩니다. 브라우저 안에서 문장과 자막을 화면에 그리고 영상으로 저장합니다.</p>
+      <div class="archive-profile-meta">
+        <span>화면 <b>9:16 쇼츠</b></span>
+        <span>제작 <b>브라우저 직접</b></span>
+        <span>저장 <b>WebM 영상</b></span>
       </div>
     </div>
-  </main>
+    <a class="archive-primary-action" href="#make" onclick="document.getElementById('subject').focus()">지금 만들기<i aria-hidden="true">↗</i></a>
+  </section>
+
+  <div class="archive-layout">
+    <aside class="archive-sidebar" aria-label="제작 안내">
+      <section class="archive-side-card">
+        <div class="archive-side-label">MAKING</div>
+        <h2>네 단계면<br>끝납니다.</h2>
+        <p>설정 없이 바로 시작하고, 진행률을 보며 완성합니다.</p>
+      </section>
+      <section class="archive-side-card archive-side-categories">
+        <div class="archive-side-label">FLOW</div>
+        <div class="archive-category-list">
+          <div class="archive-category"><span>1. 주제 입력</span><b>시작</b></div>
+          <div class="archive-category"><span>2. 문장 분리</span><b>자동</b></div>
+          <div class="archive-category"><span>3. 자막 그리기</span><b>화면</b></div>
+          <div class="archive-category"><span>4. 영상 저장</span><b>WebM</b></div>
+        </div>
+      </section>
+      <section class="archive-side-card archive-side-note">
+        <span class="archive-note-dot"></span>
+        <p>서버가 필요 없는 브라우저 쇼츠 제작입니다. 화면에 문장과 자막을 순서대로 그려 영상으로 기록합니다.</p>
+      </section>
+    </aside>
+
+    <div class="archive-board" id="make">
+      <div class="archive-board-head">
+        <div>
+          <div class="archive-eyebrow">CREATE SHORT</div>
+          <h2>쇼츠 만들기</h2>
+          <p>주제를 적고 버튼을 누르면 아래에서 바로 미리보기됩니다.</p>
+        </div>
+      </div>
+
+      <div class="studio-form">
+        <label for="subject">쇼츠 주제</label>
+        <textarea id="subject" placeholder="예: 아침 커피 한 잔이 주는 작은 행복"></textarea>
+
+        <label for="ratio">화면 비율</label>
+        <div class="pill-scale" id="ratioScale">
+          <button type="button" class="pill is-active" data-ratio="9/16">세로 9:16</button>
+          <button type="button" class="pill" data-ratio="16/9">가로 16:9</button>
+        </div>
+
+        <div class="studio-actions">
+          <button class="btn-primary" id="makeBtn" type="button">쇼츠 만들기 ↗</button>
+          <button class="btn-ghost" id="previewVoiceBtn" type="button">낭독 들어보기</button>
+        </div>
+
+        <div class="studio-progress" id="progressBox" role="status" aria-live="polite">
+          <div class="sbar"><div id="barFill"></div></div>
+          <div class="slabel"><span id="stageName">준비 중</span><span class="pct" id="pctText">0%</span></div>
+        </div>
+      </div>
+
+      <div class="studio-result" id="resultBox" hidden>
+        <div class="archive-board-head"><div><div class="archive-eyebrow">RESULT</div><h2>완성된 쇼츠</h2><p>재생을 확인한 뒤 영상을 저장하세요.</p></div></div>
+        <div class="phone"><video id="videoPreview" controls playsinline></video></div>
+        <div class="rate" id="rate"></div>
+        <div class="studio-actions">
+          <a class="btn-primary" id="downloadLink" download="shorthub-short.webm">영상 저장 ⬇</a>
+        </div>
+        <div class="studio-note">
+          <p><strong>낭독:</strong> 화면 영상은 무음으로 저장됩니다. "낭독 들어보기"를 누르면 주제를 목소리로 들을 수 있습니다. (브라우저 보안상 목소리를 영상에 자동으로 합치는 것은 제한됩니다)</p>
+        </div>
+      </div>
+
+      <div class="step-list" id="how">
+        <div class="step-row"><span class="step-num">1</span><div><h3>주제를 적습니다</h3><p>한 줄이면 충분합니다. 문장과 구절로 자동 분리합니다.</p></div></div>
+        <div class="step-row"><span class="step-num">2</span><div><h3>화면에 그립니다</h3><p>문장을 순서대로 배경 위에 그려 쇼츠처럼 보여줍니다.</p></div></div>
+        <div class="step-row"><span class="step-num">3</span><div><h3>자막을 붙입니다</h3><p>하단에 읽기 좋은 자막 바를 함께 표시합니다.</p></div></div>
+        <div class="step-row"><span class="step-num">4</span><div><h3>영상으로 저장합니다</h3><p>완성된 화면을 WebM 영상으로 이 기기에 내려받습니다.</p></div></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="archive-footer" style="margin:26px auto 40px;width:min(1180px,calc(100% - 40px));justify-content:space-between;display:flex;gap:16px;color:#8b95a1;font-size:12px">
+  <span>ShortHub · AI 쇼츠 스튜디오 (서버 없이 브라우저에서 동작)</span>
+  <a href="https://github.com/jeremylee0213/shorthub" target="_blank" rel="noopener">저장소 보기 ↗</a>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+  var subject = document.getElementById("subject");
+  var makeBtn = document.getElementById("makeBtn");
+  var voiceBtn = document.getElementById("previewVoiceBtn");
+  var progressBox = document.getElementById("progressBox");
+  var barFill = document.getElementById("barFill");
+  var stageName = document.getElementById("stageName");
+  var pctText = document.getElementById("pctText");
+  var resultBox = document.getElementById("resultBox");
+  var videoPreview = document.getElementById("videoPreview");
+  var downloadLink = document.getElementById("downloadLink");
+  var rate = document.getElementById("rate");
+  var ratioScale = document.getElementById("ratioScale");
+
+  var ratio = "9/16";
+  var recording = false;
+  var canvas = document.createElement("canvas");
+  var ctx = canvas.getContext("2d");
+
+  ratioScale.addEventListener("click", function (e) {
+    var b = e.target.closest(".pill");
+    if (!b) return;
+    ratioScale.querySelectorAll(".pill").forEach(function (x) { x.classList.remove("is-active"); });
+    b.classList.add("is-active");
+    ratio = b.getAttribute("data-ratio");
+  });
+
+  function splitScript(text) {
+    var s = String(text || "").replace(/\s+/g, " ").trim();
+    if (!s) return [];
+    var out = s.split(/(?<=[.!?…])\s+/).map(function (x) { return x.trim(); }).filter(Boolean);
+    if (out.length < 2) out = s.split(/[,·]\s*/).map(function (x) { return x.trim(); }).filter(Boolean);
+    if (!out.length) out = [s];
+    return out;
+  }
+
+  function setProgress(pct, label) {
+    var p = Math.max(0, Math.min(100, Math.round(pct)));
+    barFill.style.width = p + "%";
+    pctText.textContent = p + "%";
+    stageName.textContent = label || "준비 중";
+  }
+
+  function sizeCanvas() {
+    if (ratio === "9/16") { canvas.width = 720; canvas.height = 1280; }
+    else { canvas.width = 1280; canvas.height = 720; }
+  }
+
+  function wrap(c, str, maxW) {
+    var s = String(str || "");
+    var out = [];
+    var cur = "";
+    var words = s.split(" ");
+    for (var i = 0; i < words.length; i++) {
+      var t = cur ? cur + " " + words[i] : words[i];
+      if ((c.measureText(t) || {}).width > maxW && cur) { out.push(cur); cur = words[i]; }
+      else cur = t;
+    }
+    if (cur) out.push(cur);
+    return out.length ? out : [s];
+  }
+
+  function drawScene(str) {
+    var s = String(str || "");
+    var W = canvas.width, H = canvas.height, c = ctx;
+    var g = c.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, "#0b1020");
+    g.addColorStop(1, "#243b55");
+    c.fillStyle = g;
+    c.fillRect(0, 0, W, H);
+    var rg = c.createRadialGradient(W*0.8, H*0.16, 10, W*0.8, H*0.16, 360);
+    rg.addColorStop(0, "rgba(69,147,255,0.32)");
+    rg.addColorStop(1, "rgba(69,147,255,0)");
+    c.fillStyle = rg;
+    c.fillRect(0, 0, W, H);
+
+    c.textAlign = "center";
+    c.textBaseline = "middle";
+    c.fillStyle = "#ffffff";
+    var fs = ratio === "9/16" ? 56 : 48;
+    c.font = "700 " + fs + "px 'Avenir Next','Apple SD Gothic Neo','Noto Sans KR',sans-serif";
+    var lines = wrap(c, s, W - 120);
+    var lh = fs * 1.4;
+    var y0 = H/2 - (lines.length - 1) * lh / 2;
+    for (var i = 0; i < lines.length; i++) c.fillText(lines[i], W/2, y0 + i*lh);
+
+    // 하단 자막 바
+    var cap = Math.min(Math.max(c.measureText(s).width + 52, 140), W*0.86);
+    var ch = ratio === "9/16" ? 76 : 66;
+    var cx = (W - cap) / 2;
+    var cy2 = H - ch - (ratio === "9/16" ? 80 : 46);
+    c.fillStyle = "rgba(0,0,0,0.62)";
+    if (c.roundRect) { c.beginPath(); c.roundRect(cx, cy2, cap, ch, 18); c.fill(); }
+    else { c.fillRect(cx, cy2, cap, ch); }
+    c.fillStyle = "#fff";
+    c.font = "700 30px 'Avenir Next','Apple SD Gothic Neo','Noto Sans KR',sans-serif";
+    var sub = wrap(c, s, W - 160);
+    var lh2 = 34;
+    var y3 = cy2 + ch/2 - (sub.length - 1) * lh2 / 2;
+    for (var j = 0; j < sub.length; j++) c.fillText(sub[j], W/2, y3 + j*lh2);
+  }
+
+  function pickMime() {
+    var mimes = ["video/webm;codecs=vp9", "video/webm;codecs=vp8", "video/webm", "video/mp4"];
+    for (var i = 0; i < mimes.length; i++) if (window.MediaRecorder && MediaRecorder.isTypeSupported(mimes[i])) return mimes[i];
+    return "";
+  }
+
+  function make() {
+    if (recording) return;
+    var text = subject.value.trim();
+    if (!text) { subject.focus(); alert("주제를 먼저 적어주세요"); return; }
+    var chunks = splitScript(text);
+    if (!chunks.length) return;
+    if (!("MediaRecorder" in window) || !canvas.captureStream) {
+      // 캡처 미지원 브라우저: 진행률과 장면만 보여주고 결과를 이미지 미리보기로
+      renderWithoutCapture(chunks);
+      return;
+    }
+
+    recording = true;
+    makeBtn.disabled = true;
+    resultBox.hidden = true;
+    progressBox.style.display = "block";
+    sizeCanvas();
+    setProgress(4, "화면 준비 중");
+
+    var stream = canvas.captureStream(30);
+    var mime = pickMime();
+    var rec;
+    try { rec = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined); }
+    catch (err) { renderWithoutCapture(chunks); return; }
+
+    var recordChunks = [];
+    rec.ondataavailable = function (e) { if (e.data && e.data.size) recordChunks.push(e.data); };
+    rec.onstop = function () {
+      var type = mime || "video/webm";
+      var blob = new Blob(recordChunks, { type: type });
+      var url = URL.createObjectURL(blob);
+      videoPreview.src = url;
+      downloadLink.href = url;
+      downloadLink.download = "shorthub-short." + (type.indexOf("mp4") >= 0 ? "mp4" : "webm");
+      var size = (blob.size / 1024 / 1024).toFixed(1);
+      rate.textContent = "재생해서 확인해 보세요 · " + size + " MB · " + chunks.length + "개 장면";
+      resultBox.hidden = false;
+      setProgress(100, "완성");
+      recording = false;
+      makeBtn.disabled = false;
+    };
+    rec.start(250);
+    setProgress(8, "장면 그리는 중");
+
+    var perScene = 2600;
+    var total = chunks.length * perScene;
+    var t0 = performance.now();
+    var lastSafe = 8;
+
+    function frame(now) {
+      try {
+        if (recording === false) return;
+        var elapsed = now - t0;
+        if (elapsed >= total) {
+          setProgress(94, "영상 저장 중");
+          try { rec.stop(); } catch (e) { recording = false; makeBtn.disabled = false; }
+          return;
+        }
+        var idx = Math.min(Math.floor(elapsed / perScene), chunks.length - 1);
+        var local = (elapsed % perScene) / perScene;
+        var alpha = local < 0.12 ? local / 0.12 : local > 0.86 ? (1 - local) / 0.14 : 1;
+        alpha = Math.max(0, Math.min(1, alpha));
+        drawScene(chunks[idx]);
+        var p = 8 + (elapsed / total) * 84;
+        if (p > lastSafe) lastSafe = p;
+        setProgress(p, "자막 그리는 중 · " + (idx + 1) + "/" + chunks.length);
+        requestAnimationFrame(frame);
+      } catch (err) {
+        // 한 프레임 오류는 건너뛰고 계속 진행
+        lastSafe = Math.min(94, lastSafe + 1);
+        setProgress(lastSafe, "장면 진행 중");
+        requestAnimationFrame(frame);
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  function renderWithoutCapture(chunks) {
+    // 캡처 미지원 브라우저 폴백: 진행률만 완주하고 마지막 장면을 캔버스로 보여줌
+    recording = false;
+    makeBtn.disabled = true;
+    resultBox.hidden = true;
+    progressBox.style.display = "block";
+    sizeCanvas();
+    var total = chunks.length;
+    setProgress(5, "장면 그리는 중");
+    for (var i = 0; i < total; i++) {
+      drawScene(chunks[i]);
+      setProgress(Math.round((i + 1) / total * 90), "장면 " + (i + 1) + "/" + total);
+      canvas.style.display = "block";
+    }
+    // 마지막 장면을 정적 이미지로 결과 박스에 표시
+    var data = canvas.toDataURL("image/png");
+    videoPreview.src = data;
+    downloadLink.href = data;
+    downloadLink.download = "shorthub-shot.png";
+    rate.textContent = "이 브라우저는 영상 녹화를 지원하지 않아 장면 이미지로 저장합니다 · " + total + "개 장면";
+    resultBox.hidden = false;
+    setProgress(100, "완성");
+    makeBtn.disabled = false;
+  }
+
+  voiceBtn.addEventListener("click", function () {
+    var text = subject.value.trim();
+    if (!text) { subject.focus(); return; }
+    if (!("speechSynthesis" in window)) { alert("이 브라우저는 음성 합성을 지원하지 않습니다."); return; }
+    window.speechSynthesis.cancel();
+    var u = new SpeechSynthesisUtterance(text);
+    u.lang = "ko-KR";
+    u.rate = 0.98;
+    var vs = window.speechSynthesis.getVoices();
+    var ko = vs.filter(function (v) { return /^ko/i.test(v.lang || ""); });
+    if (ko.length) u.voice = ko[0];
+    window.speechSynthesis.speak(u);
+  });
+
+  makeBtn.addEventListener("click", make);
+  if ("speechSynthesis" in window) window.speechSynthesis.onvoiceschanged = function () { window.speechSynthesis.getVoices(); };
+})();
+</script>
 </body>
 </html>
