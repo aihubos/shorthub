@@ -10,6 +10,7 @@ from openai.types.chat import ChatCompletion
 
 from app.config import config
 from app.models.llm_provider import DEFAULT_LLM_PROVIDER_ID, get_llm_provider
+from app.services import oauth_login
 
 _max_retries = 5
 MIN_SCRIPT_PARAGRAPH_NUMBER = 1
@@ -152,6 +153,18 @@ def _generate_response(prompt: str, app_config=None) -> str:
 
         logger.info(f"llm provider: {llm_provider}")
         api_key = runtime_app_config.get(provider.config_key("api_key"), "")
+        if llm_provider == "openai" and not str(api_key or "").strip():
+            api_key, oauth_base_url = oauth_login.resolve_openai_credentials(
+                runtime_app_config
+            )
+            if oauth_base_url and not str(
+                runtime_app_config.get(provider.config_key("base_url"), "") or ""
+            ).strip():
+                configured_base_url_override = oauth_base_url
+            else:
+                configured_base_url_override = ""
+        else:
+            configured_base_url_override = ""
         configured_model = runtime_app_config.get(provider.config_key("model_name"), "")
         model_name = provider.resolve_model_name(configured_model)
         if configured_model and model_name != configured_model:
@@ -161,7 +174,7 @@ def _generate_response(prompt: str, app_config=None) -> str:
             )
         configured_base_url = runtime_app_config.get(
             provider.config_key("base_url"), ""
-        )
+        ) or configured_base_url_override
         base_url = provider.resolve_base_url(configured_base_url)
         if configured_base_url and configured_base_url.strip().rstrip("/") in {
             url.rstrip("/") for url in provider.deprecated_base_urls

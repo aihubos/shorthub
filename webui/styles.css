@@ -437,3 +437,263 @@ div[class*="st-key-task_row_"] button[kind="secondary"] p {
         min-width: 1.75rem !important;
     }
 }
+
+
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap");
+
+:root {
+    --ggt-primary: #007AFF;
+    --ggt-primary-light: #EBF5FF;
+    --ggt-primary-dark: #0056CC;
+    --ggt-accent: #5856D6;
+    --ggt-success: #34C759;
+    --ggt-warning: #FF9500;
+    --ggt-error: #FF3B30;
+    --ggt-surface: #F5F5F7;
+    --ggt-card: #FFFFFF;
+    --ggt-border: #D2D2D7;
+    --ggt-text: #1D1D1F;
+    --ggt-muted: #86868B;
+    --ggt-header: rgba(255,255,255,0.80);
+    --ggt-radius-card: 16px;
+    --ggt-radius-btn: 12px;
+    --ggt-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    --ggt-space-3: 12px;
+    --ggt-space-4: 16px;
+    --ggt-space-6: 24px;
+}
+
+html, body, [data-testid="stAppViewContainer"], .stApp {
+    background: var(--ggt-surface) !important;
+    color: var(--ggt-text) !important;
+    font-family: "Noto Sans KR", -apple-system, BlinkMacSystemFont, system-ui, sans-serif !important;
+}
+
+[data-testid="stHeader"] {
+    background: var(--ggt-header) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+div[data-testid="stMainBlockContainer"] {
+    max-width: 1400px !important;
+    padding-left: var(--ggt-space-6) !important;
+    padding-right: var(--ggt-space-6) !important;
+    padding-top: 12px !important;
+}
+
+.mpt-brand__name {
+    font-size: 28px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.4px !important;
+    color: var(--ggt-text) !important;
+}
+
+.mpt-brand__version {
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    color: var(--ggt-muted) !important;
+}
+
+div[data-testid="stVerticalBlockBorderWrapper"] {
+    background: var(--ggt-card) !important;
+    border: 1px solid var(--ggt-border) !important;
+    border-radius: var(--ggt-radius-card) !important;
+    box-shadow: var(--ggt-shadow) !important;
+}
+
+.stButton > button[kind="primary"] {
+    background: var(--ggt-primary) !important;
+    color: #FFFFFF !important;
+    border: 0 !important;
+    border-radius: var(--ggt-radius-btn) !important;
+    font-weight: 700 !important;
+    min-height: 48px !important;
+    box-shadow: 0 2px 8px rgba(0,122,255,0.30) !important;
+}
+
+.stButton > button[kind="primary"]:hover {
+    background: var(--ggt-primary-dark) !important;
+}
+
+.stButton > button[kind="primary"]:active {
+    transform: scale(0.98);
+}
+
+.stButton > button[kind="secondary"] {
+    background: var(--ggt-surface) !important;
+    color: var(--ggt-text) !important;
+    border: 1px solid var(--ggt-border) !important;
+    border-radius: var(--ggt-radius-btn) !important;
+    font-weight: 500 !important;
+}
+
+.stTextInput input, .stTextArea textarea, .stSelectbox [data-baseweb="select"] > div {
+    border-radius: var(--ggt-radius-btn) !important;
+    border-color: var(--ggt-border) !important;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.06) !important;
+}
+
+.ggt-empty {
+    background: var(--ggt-card);
+    border: 1px solid var(--ggt-border);
+    border-radius: 16px;
+    box-shadow: var(--ggt-shadow);
+    padding: 32px 24px;
+    text-align: center;
+    animation: ggtFade 180ms ease-out;
+}
+
+.ggt-empty h2 {
+    margin: 0 0 8px;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.4px;
+    color: var(--ggt-text);
+}
+
+.ggt-empty p {
+    margin: 0 0 24px;
+    font-size: 16px;
+    line-height: 1.55;
+    color: var(--ggt-muted);
+}
+
+.ggt-steps {
+    text-align: left;
+    max-width: 420px;
+    margin: 0 auto 28px;
+    position: relative;
+}
+
+.ggt-steps::before {
+    content: "";
+    position: absolute;
+    left: 15px;
+    top: 8px;
+    bottom: 8px;
+    width: 2px;
+    background: var(--ggt-primary-light);
+}
+
+.ggt-step {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    margin: 0 0 16px;
+    position: relative;
+}
+
+.ggt-step span {
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    background: var(--ggt-primary-light);
+    color: var(--ggt-primary);
+    font-size: 13px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 32px;
+    z-index: 1;
+    border: 2px solid var(--ggt-card);
+}
+
+.ggt-step strong {
+    display: block;
+    font-size: 16px;
+    color: var(--ggt-text);
+}
+
+.ggt-step em {
+    display: block;
+    font-style: normal;
+    font-size: 13px;
+    color: var(--ggt-muted);
+    margin-top: 2px;
+}
+
+.ggt-phone {
+    width: 220px;
+    height: 390px;
+    margin: 0 auto;
+    border: 1px solid var(--ggt-border);
+    border-radius: 24px;
+    background: linear-gradient(180deg, #111111 0%, #2c2c2e 100%);
+    box-shadow: var(--ggt-shadow);
+    position: relative;
+    overflow: hidden;
+}
+
+.ggt-phone::after {
+    content: "9:16 쇼츠";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255,255,255,0.72);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+}
+
+.ggt-result {
+    background: var(--ggt-card);
+    border: 1px solid var(--ggt-border);
+    border-radius: 16px;
+    box-shadow: var(--ggt-shadow);
+    padding: 16px;
+    min-height: 390px;
+}
+
+@keyframes ggtFade {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ggt-empty, .stButton > button[kind="primary"]:active {
+        animation: none !important;
+        transform: none !important;
+    }
+}
+
+@media (max-width: 900px) {
+    .ggt-phone { width: 180px; height: 320px; }
+    .mpt-brand__name { font-size: 22px !important; }
+}
+
+/* 진행률을 크게 보여준다 */
+.ggt-progress {
+    background: var(--ggt-card);
+    border: 1px solid var(--ggt-border);
+    border-radius: 16px;
+    box-shadow: var(--ggt-shadow);
+    padding: 28px 20px;
+    text-align: center;
+    margin-bottom: 12px;
+}
+
+.ggt-progress__stage {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--ggt-text);
+    letter-spacing: -0.3px;
+    margin-bottom: 12px;
+}
+
+.ggt-progress__pct {
+    font-size: 64px;
+    font-weight: 900;
+    line-height: 1;
+    color: var(--ggt-primary);
+    font-variant-numeric: tabular-nums;
+}
+
+.ggt-progress__pct span {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--ggt-muted);
+}

@@ -359,6 +359,16 @@
     "Resume LoomLoom Status Check": "继续查询状态",
     "Stop Tracking LoomLoom Run": "停止跟踪",
     "Stop Tracking LoomLoom Run Help": "只停止本地状态查询，不会取消胜算云中可能仍在执行的付费任务。",
-    "llm_provider_tips.litellm": "##### LiteLLM 配置说明\n- **API Key**: 无需在此处填写；请通过环境变量配置目标 Provider 的密钥\n- **Base Url**: 无需填写\n- **Model Name**: 默认 `{default_model}`；使用 `provider/model` 格式，[查看 Provider 列表](https://docs.litellm.ai/docs/providers)"
+    "llm_provider_tips.litellm": "##### LiteLLM 配置说明\n- **API Key**: 无需在此处填写；请通过环境变量配置目标 Provider 的密钥\n- **Base Url**: 无需填写\n- **Model Name**: 默认 `{default_model}`；使用 `provider/model` 格式，[查看 Provider 列表](https://docs.litellm.ai/docs/providers)",
+    "ChatGPT Login Connected": "已连接 ChatGPT 账号",
+    "ChatGPT Login Connected Help": "这台电脑已登录 ChatGPT，生成短视频时会使用该登录。如果需要，仍可在下方填写 API Key。",
+    "ChatGPT Login Required": "这台电脑尚未登录 ChatGPT。",
+    "ChatGPT Login Required Help": "请先打开 ChatGPT 并登录，然后返回此页面。本机 ChatGPT 登录会自动复用。",
+    "ChatGPT Login Button": "打开 ChatGPT 登录",
+    "Grok Login Connected": "已保存 Grok 密钥",
+    "Grok Login Connected Help": "这台电脑已保存 Grok 密钥。可在 xAI 控制台重新登录后，在下方替换密钥。",
+    "Grok Login Required": "请在浏览器中连接 Grok 账号",
+    "Grok Login Required Help": "打开 xAI 控制台，登录并创建 API Key，然后粘贴到下方。xAI 不提供面向普通应用的公开登录按钮，这是官方连接方式。",
+    "Grok Login Button": "打开 Grok / xAI 登录"
   }
 }

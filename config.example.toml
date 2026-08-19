@@ -388,8 +388,8 @@ open_task_folder_on_completion = true
 
 # The WebUI writes the remaining preferences automatically. Uncomment values
 # below only when you want to define initial defaults manually.
-# language = "zh"
-# video_language = ""
+language = "ko"
+video_language = "ko-KR"
 # paragraph_number = 1
 # video_script_prompt = ""
 # custom_system_prompt = ""
@@ -412,7 +412,7 @@ open_task_folder_on_completion = true
 # sonilo_bgm_prompt = ""
 # elevenlabs_music_prompt = ""
 # subtitle_enabled = true
-# font_name = "MicrosoftYaHeiBold.ttc"
+font_name = "NotoSansKR-Bold.ttf"
 # font_size = 60
 # text_fore_color = "#FFFFFF"
 # stroke_color = "#000000"

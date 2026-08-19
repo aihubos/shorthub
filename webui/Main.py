@@ -47,6 +47,7 @@ from app.services import (
     cache_manager,
     llm,
     loomloom,
+    oauth_login,
     video,
     voice,
     webui_task,
@@ -60,16 +61,13 @@ from app.utils.logging_utils import configure_terminal_logger
 from app.utils import utils
 
 st.set_page_config(
-    page_title="MoneyPrinterTurbo",
-    page_icon="🤖",
+    page_title="ShortHub",
+    page_icon="🎬",
     layout="wide",
-    initial_sidebar_state="auto",
+    initial_sidebar_state="collapsed",
     menu_items={
         "Report a bug": "https://github.com/harry0703/MoneyPrinterTurbo/issues",
-        "About": "# MoneyPrinterTurbo\nSimply provide a topic or keyword for a video, and it will "
-        "automatically generate the video copy, video materials, video subtitles, "
-        "and video background music before synthesizing a high-definition short "
-        "video.\n\nhttps://github.com/harry0703/MoneyPrinterTurbo",
+        "About": "# ShortHub\n주제를 적으면 글, 화면, 자막, 배경음악을 붙여 세로 쇼츠를 만듭니다.\n\n원본: https://github.com/harry0703/MoneyPrinterTurbo",
     },
 )
 
@@ -104,7 +102,7 @@ LOOMLOOM_MAX_POLL_FAILURES = 5
 DEFAULT_VIDEO_CODEC_OPTION = "__default__"
 DEFAULT_SUBTITLE_SETTINGS = {
     "subtitle_enabled": True,
-    "font_name": "MicrosoftYaHeiBold.ttc",
+    "font_name": "NotoSansKR-Bold.ttf",
     "subtitle_position": "bottom",
     "custom_position": 70.0,
     "text_fore_color": "#FFFFFF",
@@ -393,6 +391,7 @@ def _initialize_session_state():
         saved_language=saved_ui_language,
         browser_locale=browser_locale,
         supported_languages=locales.keys(),
+        default_language="ko",
     )
 
     defaults = {
@@ -1306,13 +1305,13 @@ def _render_brand(available_update: str | None = None):
     st.markdown(
         f"""
         <h1 class="mpt-brand">
-            <span class="mpt-brand__name">MoneyPrinterTurbo</span>
+            <span class="mpt-brand__name">ShortHub</span>
             <a class="mpt-brand__version"
                href="https://github.com/harry0703/MoneyPrinterTurbo"
                target="_blank"
                rel="noopener noreferrer"
-               aria-label="Open MoneyPrinterTurbo on GitHub"
-               title="Open project on GitHub">v{html.escape(str(config.project_version))}</a>
+               aria-label="원본 프로젝트 GitHub 열기"
+               title="원본 프로젝트 GitHub 열기">v{html.escape(str(config.project_version))}</a>
             {update_link}
         </h1>
         """,
@@ -1402,6 +1401,7 @@ def _render_top_bar():
 
 
 support_locales = [
+    "ko-KR",
     "zh-CN",
     "zh-HK",
     "zh-TW",
@@ -1565,8 +1565,26 @@ def _render_generation_logs(task_id):
     st.code("\n".join(log_records))
 
 
+def _progress_stage(progress: int) -> str:
+    """진행률 단계를 한글로 보여준다."""
+    steps = [
+        (0, "준비 중"),
+        (5, "이야기 쓰는 중"),
+        (10, "검색어 뽑는 중"),
+        (20, "목소리 만드는 중"),
+        (30, "자막 만드는 중"),
+        (40, "화면 모으는 중"),
+        (50, "영상 이어붙이는 중"),
+    ]
+    label = "영상 만드는 중"
+    for p, name in steps:
+        if progress >= p:
+            label = name
+    return label
+
+
 def _render_generation_task_snapshot(task_id, task):
-    """根据状态存储中的快照渲染进度、失败原因或最终成片。"""
+    """상태 저장소의 스냅샷으로 진행률, 실패 이유, 최종 영상을 그린다."""
     if not task:
         st.info(tr("Generating Video"))
         _render_generation_logs(task_id)
@@ -1575,11 +1593,19 @@ def _render_generation_task_snapshot(task_id, task):
     state = _normalize_task_state(task.get("state"))
     progress = max(0, min(100, int(task.get("progress", 0) or 0)))
     if state == const.TASK_STATE_PROCESSING:
-        st.info(tr("Generating Video"))
+        stage = _progress_stage(progress)
+        st.markdown(
+            f"""<div class="ggt-progress">
+                <div class="ggt-progress__stage">{stage}</div>
+                <div class="ggt-progress__pct">{progress}<span>%</span></div>
+            </div>""",
+            unsafe_allow_html=True,
+        )
         st.progress(
             progress,
-            text=f"{tr('Task Progress')}: {progress}%",
+            text=f"{tr('Task Progress')}: {progress}% - {stage}",
         )
+        st.caption(tr("Generating Video"))
         _render_generation_logs(task_id)
         return
 
@@ -1721,7 +1747,7 @@ def get_llm_provider_tips(provider_id, **kwargs):
     # 统一使用英文，避免在 locale 中复制英文后长期不同步。后续某个语种完成
     # 全量翻译后，再将它加入这里的独立维护范围。
     ui_language = st.session_state.get("ui_language", "en")
-    tips_language = ui_language if ui_language in {"zh", "en"} else "en"
+    tips_language = ui_language if ui_language in {"zh", "en", "ko"} else "en"
     tips = (
         locales.get(tips_language, {}).get("Translation", {}).get(provider.tips_key, "")
     )
@@ -1792,7 +1818,7 @@ def get_tts_provider_tips(provider_id):
     # TTS 配置说明与 LLM Provider 采用相同维护策略：只维护中英文，
     # 其它界面语言统一回退英文，避免复制后长期不同步。
     ui_language = st.session_state.get("ui_language", "en")
-    tips_language = ui_language if ui_language in {"zh", "en"} else "en"
+    tips_language = ui_language if ui_language in {"zh", "en", "ko"} else "en"
     return (
         locales.get(tips_language, {})
         .get("Translation", {})
@@ -2129,11 +2155,48 @@ def _render_cache_management_settings(panel):
 # 同时控制阅读行宽，避免弹窗在宽屏设备上显得过于松散。
 # Dialog 继承 fragment 行为，内部控件交互只重绘弹窗；函数末尾单独保存配置，
 # 关闭时通过回调触发整页同步，确保生成流程读取最新 Provider 和界面设置。
+def _render_provider_login_panel(provider_id: str):
+    """ChatGPT / Grok 로그인을 설정 화면에 붙인다."""
+    if provider_id == "openai":
+        status = oauth_login.chatgpt_status()
+        if status["connected"]:
+            account = oauth_login.mask_account(status.get("account_id", ""))
+            message = tr("ChatGPT Login Connected")
+            if account:
+                message = f"{message} ({account})"
+            st.success(message)
+            st.caption(tr("ChatGPT Login Connected Help"))
+        else:
+            st.warning(tr("ChatGPT Login Required"))
+            st.caption(tr("ChatGPT Login Required Help"))
+            st.link_button(
+                tr("ChatGPT Login Button"),
+                oauth_login.CHATGPT_ACCOUNT_URL,
+                use_container_width=True,
+            )
+        return
+
+    if provider_id == "grok":
+        grok_status = oauth_login.grok_status(config.app)
+        if grok_status["connected"]:
+            st.success(tr("Grok Login Connected"))
+            st.caption(tr("Grok Login Connected Help"))
+        else:
+            st.info(tr("Grok Login Required"))
+            st.caption(tr("Grok Login Required Help"))
+        st.link_button(
+            tr("Grok Login Button"),
+            oauth_login.GROK_CONSOLE_URL,
+            use_container_width=True,
+        )
+
+
 @st.dialog(
     tr("Settings"),
     width="medium",
     on_dismiss=_dismiss_settings_dialog,
 )
+
 def _render_settings_dialog():
     with st.container():
         # 历史 hide_config 只用于隐藏旧基础设置面板。改为固定设置入口后，该值
@@ -2310,6 +2373,10 @@ def _render_settings_dialog():
             if tips:
                 with llm_helper:
                     st.info(tips)
+
+            if llm_provider in {"openai", "grok"}:
+                with llm_form_panel:
+                    _render_provider_login_panel(llm_provider)
 
             st_llm_api_key = llm_api_key
             if llm_provider_spec.show_api_key:
@@ -5311,12 +5378,11 @@ def _render_generation_controls(
         st.session_state["current_generation_task_id"] = task_id
         logger.info(f"WebUI generation task submitted: task_id={task_id}")
 
-    _render_current_generation_task()
     return start_button
 
 
 def _render_application():
-    """按固定顺序渲染顶部栏、弹窗、生成表单和任务结果。"""
+    """상단바, 설정 팝업, 왼쪽 설정/오른쪽 미리보기 작업대를 그립니다."""
     _render_top_bar()
 
     if st.session_state.get("settings_dialog_open", False):
@@ -5330,36 +5396,54 @@ def _render_application():
     if restore_applied or restore_succeeded:
         st.success(tr("Task Configuration Loaded"))
 
-    with st.container(key="main_settings_grid"):
-        panel = st.columns(4)
-    left_panel = panel[0]
-    middle_panel = panel[1]
-    audio_panel = panel[2]
-    right_panel = panel[3]
-
     params = VideoParams(video_subject="")
     params.match_materials_to_script = bool(
         st.session_state.get("match_materials_to_script", False)
     )
-    _render_script_settings(left_panel, params)
 
-    uploaded_files = _render_video_settings(middle_panel, params)
-    uploaded_audio_file, uploaded_bgm_file, voice_mode = _render_audio_settings(
-        audio_panel, params
-    )
+    workspace = st.columns([0.42, 0.58], gap="large")
+    with workspace[0]:
+        with st.container(key="main_settings_grid"):
+            _render_script_settings(st.container(), params)
+            uploaded_files = _render_video_settings(st.container(), params)
+            uploaded_audio_file, uploaded_bgm_file, voice_mode = _render_audio_settings(
+                st.container(), params
+            )
+            _render_subtitle_settings(st.container(), params)
+            generation_submitted = _render_generation_controls(
+                params,
+                uploaded_files,
+                uploaded_audio_file,
+                uploaded_bgm_file,
+                voice_mode,
+            )
 
-    _render_subtitle_settings(right_panel, params)
+    with workspace[1]:
+        current_task_id = st.session_state.get("current_generation_task_id", "")
+        has_preview = bool(current_task_id)
+        if has_preview:
+            st.markdown('<div class="ggt-result">', unsafe_allow_html=True)
+            st.subheader("만든 쇼츠")
+            _render_current_generation_task()
+            st.markdown("</div>", unsafe_allow_html=True)
+        else:
+            st.markdown(
+                """
+                <div class="ggt-empty">
+                    <h2>ShortHub</h2>
+                    <p>왼쪽에서 주제를 적으면, 글과 화면과 자막을 붙여 세로 쇼츠를 만듭니다.</p>
+                    <div class="ggt-steps">
+                        <div class="ggt-step"><span>1</span><div><strong>주제 적기</strong><em>한 줄이면 충분합니다</em></div></div>
+                        <div class="ggt-step"><span>2</span><div><strong>목소리와 자막 확인</strong><em>기본값 그대로 시작해도 됩니다</em></div></div>
+                        <div class="ggt-step"><span>3</span><div><strong>쇼츠 만들기</strong><em>완료되면 이 칸에서 바로 봅니다</em></div></div>
+                    </div>
+                    <div class="ggt-phone" aria-hidden="true"></div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
 
-    generation_submitted = _render_generation_controls(
-        params,
-        uploaded_files,
-        uploaded_audio_file,
-        uploaded_bgm_file,
-        voice_mode,
-    )
-
-    # 生成分支在启动后台线程前已经请求过保存。普通控件交互继续请求非阻塞保存；
-    # 如果后台任务正在使用配置，配置层会在任务结束时自动应用并落盘最新值。
+    # 생성 분기에서 이미 저장을 요청한 경우, 페이지 끝의 중복 저장은 건너뜁니다.
     if not generation_submitted:
         _save_runtime_config()
 

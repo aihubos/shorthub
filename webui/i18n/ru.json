@@ -296,6 +296,16 @@
     "Custom Position (% from top)": "Пользовательское положение (% от верхнего края)",
     "Please enter a value between 0 and 100": "Введите значение от 0 до 100",
     "Please enter a valid number": "Введите корректное число",
-    "Please Select a Valid Video Source": "Выберите поддерживаемый источник материалов"
+    "Please Select a Valid Video Source": "Выберите поддерживаемый источник материалов",
+    "ChatGPT Login Connected": "ChatGPT account connected",
+    "ChatGPT Login Connected Help": "This Mac is already signed in to ChatGPT. Shorts generation can use that login. You can still paste an API key below if you prefer.",
+    "ChatGPT Login Required": "ChatGPT is not signed in on this Mac.",
+    "ChatGPT Login Required Help": "Open ChatGPT, sign in, then return here. Codex/ChatGPT login on this computer is reused automatically.",
+    "ChatGPT Login Button": "Open ChatGPT sign-in",
+    "Grok Login Connected": "Grok account key saved",
+    "Grok Login Connected Help": "A Grok key is saved on this computer. You can replace it below after signing in at the xAI console.",
+    "Grok Login Required": "Connect Grok in the browser",
+    "Grok Login Required Help": "Open the xAI console, sign in, create an API key, then paste it below. xAI does not provide a public app login button, so this is the official connect path.",
+    "Grok Login Button": "Open Grok / xAI sign-in"
   }
 }

@@ -920,7 +920,8 @@ class TestLiteLLMProvider(unittest.TestCase):
         config.app["openai_base_url"] = "https://api.openai.com/v1"
         config.app["openai_model_name"] = "gpt-4o-mini"
 
-        result = llm._generate_response("test")
+        with patch("app.services.oauth_login.resolve_openai_credentials", return_value=("", "")):
+            result = llm._generate_response("test")
 
         self.assertIn("Error:", result)
         self.assertIn("api_key is not set", result)

@@ -32,7 +32,10 @@ else
 fi
 
 find_available_port() {
-  WEBUI_HOST="$MPT_WEBUI_HOST" WEBUI_PORT="$MPT_WEBUI_PORT" "$@" - <<'PY' 2>/dev/null
+  export WEBUI_HOST="$MPT_WEBUI_HOST"
+  export WEBUI_PORT="$MPT_WEBUI_PORT"
+  if [ -x "$CURRENT_DIR/.venv/bin/python" ]; then
+    "$CURRENT_DIR/.venv/bin/python" - <<'PY' 2>/dev/null
 import os
 import socket
 import sys
@@ -52,11 +55,55 @@ for port in candidates:
 
 sys.exit(1)
 PY
+  elif command -v uv >/dev/null 2>&1; then
+    uv run python - <<'PY' 2>/dev/null
+import os
+import socket
+import sys
+
+host = os.environ.get("WEBUI_HOST", "127.0.0.1")
+preferred = int(os.environ.get("WEBUI_PORT", "8501"))
+candidates = [preferred] + [port for port in range(8502, 8600) if port != preferred]
+
+for port in candidates:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        try:
+            sock.bind((host, port))
+        except OSError:
+            continue
+        print(port)
+        sys.exit(0)
+
+sys.exit(1)
+PY
+  else
+    python3 - <<'PY' 2>/dev/null
+import os
+import socket
+import sys
+
+host = os.environ.get("WEBUI_HOST", "127.0.0.1")
+preferred = int(os.environ.get("WEBUI_PORT", "8501"))
+candidates = [preferred] + [port for port in range(8502, 8600) if port != preferred]
+
+for port in candidates:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        try:
+            sock.bind((host, port))
+        except OSError:
+            continue
+        print(port)
+        sys.exit(0)
+
+sys.exit(1)
+PY
+  fi
 }
 
 # 用 Python 做端口探测，避免依赖 lsof/nc 在不同 macOS/Linux 发行版上的差异。
 # shellcheck disable=SC2086
-SELECTED_WEBUI_PORT=$(find_available_port $PORT_CHECK_CMD)
+# 프로젝트 경로에 공백이나 한글이 있어도 파이썬 실행 파일을 그대로 넘긴다.
+SELECTED_WEBUI_PORT=$(find_available_port)
 
 if [ -z "$SELECTED_WEBUI_PORT" ]; then
   echo "***** No available WebUI port found in 8501-8599 for $MPT_WEBUI_HOST. *****"
