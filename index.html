@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="ShortHub — 주제 한 줄로 세로 쇼츠를 만드는 브라우저 쇼츠 스튜디오">
+<meta name="description" content="ShortHub — 주제 한 줄로 세로 쇼츠를 만드는 AI 쇼츠 제작소">
 <link rel="icon" type="image/jpeg" href="assets/logo.jpg">
-<title>ShortHub | AI 쇼츠 스튜디오</title>
+<title>ShortHub | AI 쇼츠 제작소</title>
 <style>:root {
   --ink: #171717;
   --muted: #5f5f66;
@@ -495,6 +495,8 @@ footer {
 .step-num { width:32px; height:32px; display:grid; place-items:center; border-radius:10px; color:#fff; background:#3182f6; font-size:13px; font-weight:900; flex:0 0 auto; }
 .step-row h3 { margin:2px 0 4px; font-size:16px; }
 .step-row p { margin:0; color:#6b7684; font-size:13px; line-height:1.5; }
+a.archive-category { text-decoration: none; }
+.archive-category-list a.archive-category { box-sizing: border-box; }
 </style>
 </head>
 <body class="archive-page">
@@ -505,9 +507,10 @@ footer {
       <span>ShortHub</span>
     </a>
     <nav aria-label="주요 메뉴">
-      <a class="is-current" href="./">쇼츠 스튜디오</a>
-      <a href="#how">만드는 법</a>
-      <a href="https://github.com/jeremylee0213/shorthub" target="_blank" rel="noopener">GitHub</a>
+      <a class="is-current" href="./">쇼츠 제작소</a>
+      <a href="#make">쇼츠 만들기</a>
+      <a href="#how">실행 안내</a>
+      <a href="https://github.com/aihubos/shorthub" target="_blank" rel="noopener">GitHub</a>
     </nav>
   </div>
 </header>
@@ -517,36 +520,36 @@ footer {
     <div class="archive-avatar archive-avatar-logo"><img src="assets/logo.jpg" alt="ShortHub 마크" width="92" height="92"></div>
     <div class="archive-profile-copy">
       <div class="archive-eyebrow">AI SHORTS STUDIO</div>
-      <h1 id="studio-title">ShortHub · AI 쇼츠 스튜디오</h1>
-      <p>주제 한 줄이면 세로 쇼츠가 완성됩니다. 브라우저 안에서 문장과 자막을 화면에 그리고 영상으로 저장합니다.</p>
+      <h1 id="studio-title">ShortHub · AI 쇼츠 제작소</h1>
+      <p>주제 한 줄이면 세로 쇼츠가 완성됩니다. 글, 화면, 자막을 브라우저에서 바로 만들고 저장합니다.</p>
       <div class="archive-profile-meta">
-        <span>화면 <b>9:16 쇼츠</b></span>
-        <span>제작 <b>브라우저 직접</b></span>
-        <span>저장 <b>WebM 영상</b></span>
+        <span>화면 비율 <b>9:16 쇼츠</b></span>
+        <span>인터페이스 <b>한국어</b></span>
+        <span>연동 <b>ChatGPT · Grok</b></span>
       </div>
     </div>
     <a class="archive-primary-action" href="#make" onclick="document.getElementById('subject').focus()">지금 만들기<i aria-hidden="true">↗</i></a>
   </section>
 
   <div class="archive-layout">
-    <aside class="archive-sidebar" aria-label="제작 안내">
+    <aside class="archive-sidebar" aria-label="제작 안내와 흐름">
       <section class="archive-side-card">
-        <div class="archive-side-label">MAKING</div>
-        <h2>네 단계면<br>끝납니다.</h2>
-        <p>설정 없이 바로 시작하고, 진행률을 보며 완성합니다.</p>
+        <div class="archive-side-label">ABOUT</div>
+        <h2>주제 한 줄이면<br>충분합니다.</h2>
+        <p>임원의 생각을 바로 쇼츠로 만듭니다. 기술 설정을 몰라도 바로 완성됩니다.</p>
       </section>
       <section class="archive-side-card archive-side-categories">
-        <div class="archive-side-label">FLOW</div>
+        <div class="archive-side-label">MAKING</div>
         <div class="archive-category-list">
-          <div class="archive-category"><span>1. 주제 입력</span><b>시작</b></div>
-          <div class="archive-category"><span>2. 문장 분리</span><b>자동</b></div>
-          <div class="archive-category"><span>3. 자막 그리기</span><b>화면</b></div>
-          <div class="archive-category"><span>4. 영상 저장</span><b>WebM</b></div>
+          <a class="archive-category is-active" href="#make"><span>1. 주제 적기</span><b>첫 단계</b></a>
+          <a class="archive-category" href="#make"><span>2. 화면·소리·자막</span><b>자동</b></a>
+          <a class="archive-category" href="#make"><span>3. 진행률 확인</span><b>단계+%</b></a>
+          <a class="archive-category" href="#resultBox"><span>4. 완성 영상</span><b>바로 재생</b></a>
         </div>
       </section>
       <section class="archive-side-card archive-side-note">
         <span class="archive-note-dot"></span>
-        <p>서버가 필요 없는 브라우저 쇼츠 제작입니다. 화면에 문장과 자막을 순서대로 그려 영상으로 기록합니다.</p>
+        <p>이 페이지에서는 바로 쇼츠를 만들 수 있습니다. 더 정교한 목소리·배경음은 이 컴퓨터의 로컬 앱에서 이어서 작업합니다.</p>
       </section>
     </aside>
 
@@ -588,23 +591,74 @@ footer {
           <a class="btn-primary" id="downloadLink" download="shorthub-short.webm">영상 저장 ⬇</a>
         </div>
         <div class="studio-note">
-          <p><strong>낭독:</strong> 화면 영상은 무음으로 저장됩니다. "낭독 들어보기"를 누르면 주제를 목소리로 들을 수 있습니다. (브라우저 보안상 목소리를 영상에 자동으로 합치는 것은 제한됩니다)</p>
+          <p><strong>낭독:</strong> 화면 영상은 무음으로 저장됩니다. "낭독 들어보기"를 누르면 주제를 목소리로 들을 수 있습니다.</p>
         </div>
       </div>
 
-      <div class="step-list" id="how">
-        <div class="step-row"><span class="step-num">1</span><div><h3>주제를 적습니다</h3><p>한 줄이면 충분합니다. 문장과 구절로 자동 분리합니다.</p></div></div>
-        <div class="step-row"><span class="step-num">2</span><div><h3>화면에 그립니다</h3><p>문장을 순서대로 배경 위에 그려 쇼츠처럼 보여줍니다.</p></div></div>
-        <div class="step-row"><span class="step-num">3</span><div><h3>자막을 붙입니다</h3><p>하단에 읽기 좋은 자막 바를 함께 표시합니다.</p></div></div>
-        <div class="step-row"><span class="step-num">4</span><div><h3>영상으로 저장합니다</h3><p>완성된 화면을 WebM 영상으로 이 기기에 내려받습니다.</p></div></div>
+      <div class="archive-board-head" id="how" style="padding-top:28px">
+        <div>
+          <div class="archive-eyebrow">HOW TO RUN</div>
+          <h2>직접 실행하는 법</h2>
+          <p>이 페이지에서 바로 만들거나, 이 컴퓨터 앱으로 이어서 작업할 수 있습니다.</p>
+        </div>
       </div>
+
+      <div class="archive-list-head"><span>단계</span><span>안내</span><span>비고</span></div>
+
+      <article class="archive-post">
+        <a class="archive-post-link" href="#make">
+          <div class="archive-post-number">01</div>
+          <div class="archive-post-copy">
+            <div class="archive-post-meta"><span class="archive-post-category">제작</span><span>주제 입력</span></div>
+            <h2>주제를 적고 쇼츠 만들기를 누릅니다</h2>
+            <p>진행률이 단계와 %로 보이고, 완성되면 바로 재생됩니다.</p>
+          </div>
+          <figure class="archive-post-cover archive-post-cover-fallback"><span>STEP</span><strong>MAKE</strong><small>진행률 표시</small></figure>
+        </a>
+      </article>
+
+      <article class="archive-post">
+        <a class="archive-post-link" href="#make">
+          <div class="archive-post-number">02</div>
+          <div class="archive-post-copy">
+            <div class="archive-post-meta"><span class="archive-post-category">저장</span><span>영상 받기</span></div>
+            <h2>완성된 영상을 이 기기에 저장합니다</h2>
+            <p>WebM 파일로 내려받아 바로 확인할 수 있습니다.</p>
+          </div>
+          <figure class="archive-post-cover archive-post-cover-fallback"><span>STEP</span><strong>SAVE</strong><small>WebM</small></figure>
+        </a>
+      </article>
+
+      <article class="archive-post">
+        <a class="archive-post-link" href="https://github.com/aihubos/shorthub" target="_blank" rel="noopener">
+          <div class="archive-post-number">03</div>
+          <div class="archive-post-copy">
+            <div class="archive-post-meta"><span class="archive-post-category">로컬</span><span>한 줄 명령</span></div>
+            <h2>더 정교한 제작은 sh webui.sh 로 실행합니다</h2>
+            <p>이 컴퓨터에서 실행하면 목소리와 배경음까지 붙일 수 있습니다.</p>
+          </div>
+          <figure class="archive-post-cover archive-post-cover-fallback"><span>STEP</span><strong>RUN</strong><small>로컬 앱</small></figure>
+        </a>
+      </article>
+
+      <article class="archive-post">
+        <a class="archive-post-link" href="#make">
+          <div class="archive-post-number">TIP</div>
+          <div class="archive-post-copy">
+            <div class="archive-post-meta"><span class="archive-post-category">로그인</span><span>편하게</span></div>
+            <h2>ChatGPT 로그인이 있는 맥은 키 없이 바로 씁니다</h2>
+            <p>로컬 앱 설정에서 OpenAI를 고르면 자동 연결됩니다. Grok은 xAI 키를 붙여넣습니다.</p>
+          </div>
+          <figure class="archive-post-cover archive-post-cover-fallback"><span>LOGIN</span><strong>ChatGPT</strong><small>Grok 연동</small></figure>
+        </a>
+      </article>
     </div>
   </div>
 </main>
 
 <footer class="archive-footer" style="margin:26px auto 40px;width:min(1180px,calc(100% - 40px));justify-content:space-between;display:flex;gap:16px;color:#8b95a1;font-size:12px">
-  <span>ShortHub · AI 쇼츠 스튜디오 (서버 없이 브라우저에서 동작)</span>
-  <a href="https://github.com/jeremylee0213/shorthub" target="_blank" rel="noopener">저장소 보기 ↗</a>
+  <span>ShortHub · AI 쇼츠 제작소</span>
+  <a href="https://github.com/aihubos/shorthub" target="_blank" rel="noopener">저장소 보기 ↗</a>
 </footer>
 
 <script>
