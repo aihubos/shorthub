@@ -16,6 +16,7 @@ from app.models.exception import HttpException
 from app.models.schema import TaskListResponse, TaskQueryResponse
 from app.models.schema import BuildersLoungeVideoRequest
 from app.services import state as sm
+from app.services import video as video_service
 from app.utils import utils
 
 
@@ -205,6 +206,16 @@ class TestVideoControllerTasks(unittest.TestCase):
             video_controller._BUILDERS_LOUNGE_KOREAN_VOICE,
         )
         self.assertTrue(queued.subtitle_enabled)
+        self.assertEqual(
+            queued.font_name,
+            video_controller._BUILDERS_LOUNGE_KOREAN_FONT,
+        )
+        self.assertTrue(
+            video_service.subtitle_font_supports_text(
+                utils.font_dir(queued.font_name),
+                "한국어 자막을 확인합니다.",
+            )
+        )
         self.assertEqual(queued.bgm_type, "")
         self.assertEqual(
             [material.url for material in queued.video_materials],

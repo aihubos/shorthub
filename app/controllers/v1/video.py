@@ -72,6 +72,7 @@ _builders_lounge_task_lock = threading.Lock()
 _BUILDERS_LOUNGE_RENDER_TOKEN_ENV = "BUILDERS_LOUNGE_RENDER_TOKEN"
 _BUILDERS_LOUNGE_MATERIALS_ENV = "BUILDERS_LOUNGE_MATERIALS"
 _BUILDERS_LOUNGE_KOREAN_VOICE = "ko-KR-HyunsuMultilingualNeural-Male"
+_BUILDERS_LOUNGE_KOREAN_FONT = "NotoSansKR-Bold.ttf"
 _BUILDERS_LOUNGE_MEDIA_TYPE = "video/mp4"
 _BUILDERS_LOUNGE_MATERIAL_SUFFIXES = {
     ".avi",
@@ -236,6 +237,7 @@ def _builders_lounge_video_params(
         voice_name=_BUILDERS_LOUNGE_KOREAN_VOICE,
         voice_volume=1.0,
         voice_rate=1.0,
+        font_name=_BUILDERS_LOUNGE_KOREAN_FONT,
         bgm_type="",
         bgm_volume=0.0,
         subtitle_enabled=True,
