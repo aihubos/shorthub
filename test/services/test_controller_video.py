@@ -14,6 +14,7 @@ from app.controllers.v1 import video as video_controller
 from app.models import const
 from app.models.exception import HttpException
 from app.models.schema import TaskListResponse, TaskQueryResponse
+from app.models.schema import BuildersLoungeVideoRequest
 from app.services import state as sm
 from app.utils import utils
 
@@ -148,6 +149,138 @@ class TestVideoControllerTasks(unittest.TestCase):
             task_id="task-123",
             params=body,
             stop_at="audio",
+        )
+
+    def test_builders_lounge_create_is_idempotent_and_maps_korean_local_job(self):
+        """같은 Lounge jobId는 한 번만 큐에 넣고 한국어 로컬 작업으로 고정한다."""
+        job_id = "6c85c8cc-a77a-42b9-bc30-947815aa0558"
+        body = BuildersLoungeVideoRequest.model_validate(
+            {
+                "jobId": job_id,
+                "topic": "LLM 위키로 업무 정리하기",
+                "detailedPrompt": "문제와 해결 장면을 대비한다.",
+                "scenes": [
+                    {"narration": "자료가 흩어져 있으면 찾는 데 시간이 듭니다."},
+                    {"narration": "LLM 위키로 모으면 바로 다시 쓸 수 있습니다."},
+                ],
+            }
+        )
+        request = SimpleNamespace(
+            headers={
+                "x-task-id": "request-123",
+                "authorization": "Bearer local-test-token",
+            }
+        )
+        state = sm.MemoryState()
+
+        with (
+            patch.dict(
+                os.environ,
+                {video_controller._BUILDERS_LOUNGE_RENDER_TOKEN_ENV: "local-test-token"},
+                clear=False,
+            ),
+            patch.object(video_controller.sm, "state", state),
+            patch.object(
+                video_controller,
+                "_builders_lounge_material_names",
+                return_value=["scene-a.mp4", "scene-b.mp4"],
+            ),
+            patch.object(video_controller.task_manager, "add_task") as add_task,
+        ):
+            first = video_controller.create_builders_lounge_video(request, body)
+            second = video_controller.create_builders_lounge_video(request, body)
+
+        self.assertEqual(first, second)
+        self.assertEqual(first["data"]["taskId"], job_id)
+        self.assertEqual(first["data"]["state"], "processing")
+        self.assertIsNone(first["data"]["videoUrl"])
+        add_task.assert_called_once()
+        queued = add_task.call_args.kwargs["params"]
+        self.assertEqual(queued.video_aspect, "9:16")
+        self.assertEqual(queued.video_concat_mode, "sequential")
+        self.assertEqual(queued.video_source, "local")
+        self.assertEqual(queued.video_language, "ko-KR")
+        self.assertEqual(
+            queued.voice_name,
+            video_controller._BUILDERS_LOUNGE_KOREAN_VOICE,
+        )
+        self.assertTrue(queued.subtitle_enabled)
+        self.assertEqual(queued.bgm_type, "")
+        self.assertEqual(
+            [material.url for material in queued.video_materials],
+            ["scene-a.mp4", "scene-b.mp4"],
+        )
+        self.assertIn("자료가 흩어져", queued.video_script)
+        self.assertIn("LLM 위키로 모으면", queued.video_script)
+
+    def test_builders_lounge_contract_rejects_missing_token_without_echoing_secret(self):
+        """인증 실패 응답과 예외에는 실제 renderer token이 포함되면 안 된다."""
+        body = BuildersLoungeVideoRequest.model_validate(
+            {
+                "jobId": "6c85c8cc-a77a-42b9-bc30-947815aa0558",
+                "topic": "테스트",
+                "scenes": [
+                    {"narration": "첫 장면입니다."},
+                    {"narration": "둘째 장면입니다."},
+                ],
+            }
+        )
+        request = SimpleNamespace(headers={"x-task-id": "request-123"})
+        secret_token = "must-not-appear"
+
+        with patch.dict(
+            os.environ,
+            {video_controller._BUILDERS_LOUNGE_RENDER_TOKEN_ENV: secret_token},
+            clear=False,
+        ):
+            with self.assertRaises(HttpException) as raised:
+                video_controller.create_builders_lounge_video(request, body)
+
+        self.assertEqual(raised.exception.status_code, 401)
+        self.assertNotIn(secret_token, raised.exception.message)
+
+    def test_builders_lounge_status_returns_only_public_mp4_contract(self):
+        """상태 조회는 내부 경로·파라미터 없이 MP4 계약 필드만 반환한다."""
+        request = SimpleNamespace(
+            headers={
+                "x-task-id": "request-123",
+                "authorization": "Bearer local-test-token",
+            }
+        )
+        task = {
+            "task_id": "6c85c8cc-a77a-42b9-bc30-947815aa0558",
+            "state": const.TASK_STATE_COMPLETE,
+            "progress": 100,
+            "videos": ["/private/tasks/final-1.mp4"],
+            "params": {"renderer_token": "do-not-return"},
+        }
+
+        with (
+            patch.dict(
+                os.environ,
+                {video_controller._BUILDERS_LOUNGE_RENDER_TOKEN_ENV: "local-test-token"},
+                clear=False,
+            ),
+            patch.object(video_controller.sm.state, "get_task", return_value=task),
+            patch.object(
+                video_controller,
+                "_task_file_to_uri",
+                return_value="/tasks/job/final-1.mp4",
+            ),
+        ):
+            response = video_controller.get_builders_lounge_task(
+                request, task_id=task["task_id"]
+            )
+
+        self.assertEqual(
+            response["data"],
+            {
+                "taskId": task["task_id"],
+                "state": "completed",
+                "progress": 100,
+                "videoUrl": "/tasks/job/final-1.mp4",
+                "mediaType": "video/mp4",
+            },
         )
 
     def test_create_task_removes_state_when_queue_is_full(self):

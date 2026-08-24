@@ -1,6 +1,7 @@
 import warnings
 from enum import Enum
 from typing import Any, List, Literal, Optional, Union
+from uuid import UUID
 
 import pydantic
 from pydantic import BaseModel, ConfigDict, Field
@@ -216,6 +217,48 @@ class BaseResponse(BaseModel):
 
 class TaskVideoRequest(VideoParams, BaseModel):
     pass
+
+
+class BuildersLoungeScene(BaseModel):
+    """One narration beat from the server-authored Lounge production plan."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    narration: str = Field(min_length=1, max_length=2000)
+    visual_prompt: str = Field(
+        default="", alias="visualPrompt", min_length=0, max_length=1000
+    )
+
+
+class BuildersLoungeVideoRequest(BaseModel):
+    """Private server-to-server request used by the Builders Lounge Worker."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    job_id: UUID = Field(alias="jobId")
+    topic: str = Field(min_length=1, max_length=500)
+    detailed_prompt: str = Field(
+        default="", alias="detailedPrompt", min_length=0, max_length=4000
+    )
+    scenes: List[BuildersLoungeScene] = Field(min_length=2, max_length=8)
+
+
+class BuildersLoungeTaskData(BaseModel):
+    """Minimal task state safe to return across the renderer boundary."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    task_id: str = Field(alias="taskId")
+    state: Literal["processing", "completed", "failed"]
+    progress: int = Field(default=0, ge=0, le=100)
+    video_url: Optional[str] = Field(default=None, alias="videoUrl")
+    media_type: Optional[Literal["video/mp4"]] = Field(
+        default=None, alias="mediaType"
+    )
+
+
+class BuildersLoungeTaskResponse(BaseResponse):
+    data: BuildersLoungeTaskData
 
 
 class TaskQueryRequest(BaseModel):

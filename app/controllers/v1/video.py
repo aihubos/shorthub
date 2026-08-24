@@ -1,7 +1,9 @@
 import glob
 import os
 import pathlib
+import secrets
 import shutil
+import threading
 from typing import Union
 
 from fastapi import BackgroundTasks, Depends, Path, Query, Request, UploadFile
@@ -15,11 +17,15 @@ from app.controllers.manager.base_manager import TaskQueueFullError
 from app.controllers.manager.memory_manager import InMemoryTaskManager
 from app.controllers.manager.redis_manager import RedisTaskManager
 from app.controllers.v1.base import new_router
+from app.models import const
 from app.models.exception import HttpException
 from app.models.schema import (
     AudioRequest,
     BgmRetrieveResponse,
     BgmUploadResponse,
+    BuildersLoungeTaskResponse,
+    BuildersLoungeVideoRequest,
+    MaterialInfo,
     SubtitleRequest,
     TaskDeletionResponse,
     TaskListResponse,
@@ -60,6 +66,23 @@ else:
         max_concurrent_tasks=_max_concurrent_tasks,
         max_queued_tasks=_max_queued_tasks,
     )
+
+
+_builders_lounge_task_lock = threading.Lock()
+_BUILDERS_LOUNGE_RENDER_TOKEN_ENV = "BUILDERS_LOUNGE_RENDER_TOKEN"
+_BUILDERS_LOUNGE_MATERIALS_ENV = "BUILDERS_LOUNGE_MATERIALS"
+_BUILDERS_LOUNGE_KOREAN_VOICE = "ko-KR-HyunsuMultilingualNeural-Male"
+_BUILDERS_LOUNGE_MEDIA_TYPE = "video/mp4"
+_BUILDERS_LOUNGE_MATERIAL_SUFFIXES = {
+    ".avi",
+    ".flv",
+    ".jpeg",
+    ".jpg",
+    ".mkv",
+    ".mov",
+    ".mp4",
+    ".png",
+}
 
 
 def _sanitize_upload_filename(filename: str, request_id: str) -> str:
@@ -122,6 +145,134 @@ def _task_file_to_uri(file: str, endpoint: str, task_dir: str, request_id: str) 
     return f"/{uri_path}"
 
 
+def _verify_builders_lounge_token(request: Request) -> None:
+    """Authenticate the private renderer contract without echoing the token."""
+    request_id = base.get_task_id(request)
+    expected_token = os.getenv(_BUILDERS_LOUNGE_RENDER_TOKEN_ENV, "").strip()
+    if not expected_token:
+        raise HttpException(
+            task_id=request_id,
+            status_code=503,
+            message="builders lounge renderer is not configured",
+        )
+
+    authorization = request.headers.get("authorization", "")
+    scheme, separator, supplied_token = authorization.partition(" ")
+    if (
+        separator != " "
+        or scheme.lower() != "bearer"
+        or not supplied_token
+        or not secrets.compare_digest(supplied_token, expected_token)
+    ):
+        raise HttpException(
+            task_id=request_id,
+            status_code=401,
+            message="invalid builders lounge renderer credentials",
+        )
+
+
+def _builders_lounge_material_names(scene_count: int, request_id: str) -> list[str]:
+    """Resolve at least two server-owned local materials without exposing paths."""
+    local_videos_dir = utils.storage_dir("local_videos", create=True)
+    configured_names = [
+        item.strip()
+        for item in os.getenv(_BUILDERS_LOUNGE_MATERIALS_ENV, "").split(",")
+        if item.strip()
+    ]
+    if configured_names:
+        candidate_names = configured_names
+    else:
+        candidate_names = sorted(
+            entry.name
+            for entry in pathlib.Path(local_videos_dir).iterdir()
+            if entry.is_file()
+            and entry.suffix.lower() in _BUILDERS_LOUNGE_MATERIAL_SUFFIXES
+        )
+
+    safe_names = []
+    for name in candidate_names:
+        try:
+            resolved_path = file_security.resolve_path_within_directory(
+                local_videos_dir, name
+            )
+        except ValueError:
+            continue
+        if pathlib.Path(resolved_path).suffix.lower() not in (
+            _BUILDERS_LOUNGE_MATERIAL_SUFFIXES
+        ):
+            continue
+        safe_names.append(os.path.basename(resolved_path))
+
+    # A single source cannot demonstrate the requested scene change. Repeat the
+    # safe list only after two distinct materials have been established.
+    safe_names = list(dict.fromkeys(safe_names))
+    if len(safe_names) < 2:
+        raise HttpException(
+            task_id=request_id,
+            status_code=503,
+            message="builders lounge renderer requires two local materials",
+        )
+
+    return [safe_names[index % len(safe_names)] for index in range(scene_count)]
+
+
+def _builders_lounge_video_params(
+    body: BuildersLoungeVideoRequest, request_id: str
+) -> TaskVideoRequest:
+    material_names = _builders_lounge_material_names(len(body.scenes), request_id)
+    return TaskVideoRequest(
+        video_subject=body.topic.strip(),
+        video_script="\n\n".join(scene.narration.strip() for scene in body.scenes),
+        video_aspect="9:16",
+        video_concat_mode="sequential",
+        video_clip_duration=4,
+        video_count=1,
+        video_source="local",
+        video_materials=[
+            MaterialInfo(provider="local", url=name, duration=4)
+            for name in material_names
+        ],
+        video_language="ko-KR",
+        voice_name=_BUILDERS_LOUNGE_KOREAN_VOICE,
+        voice_volume=1.0,
+        voice_rate=1.0,
+        bgm_type="",
+        bgm_volume=0.0,
+        subtitle_enabled=True,
+    )
+
+
+def _builders_lounge_task_response(task: dict, request_id: str) -> dict:
+    state = task.get("state")
+    if state == const.TASK_STATE_COMPLETE:
+        public_state = "completed"
+    elif state == const.TASK_STATE_FAILED:
+        public_state = "failed"
+    else:
+        public_state = "processing"
+
+    video_url = None
+    videos = task.get("videos") or []
+    if videos:
+        video_url = _task_file_to_uri(
+            videos[0],
+            config.app.get("endpoint", "").rstrip("/"),
+            utils.task_dir(),
+            request_id,
+        )
+
+    return utils.get_response(
+        200,
+        {
+            "taskId": str(task["task_id"]),
+            "state": public_state,
+            "progress": max(0, min(100, int(task.get("progress", 0) or 0))),
+            "videoUrl": video_url,
+            "mediaType": _BUILDERS_LOUNGE_MEDIA_TYPE if video_url else None,
+        },
+    )
+
+
 def _parse_byte_range(
     range_header: str | None, file_size: int, request_id: str
 ) -> tuple[int, int]:
@@ -176,6 +327,67 @@ def create_video(
     background_tasks: BackgroundTasks, request: Request, body: TaskVideoRequest
 ):
     return create_task(request, body, stop_at="video")
+
+
+@router.post(
+    "/builders-lounge/videos",
+    response_model=BuildersLoungeTaskResponse,
+    summary="Create an idempotent private Builders Lounge render task",
+)
+def create_builders_lounge_video(
+    request: Request, body: BuildersLoungeVideoRequest
+):
+    _verify_builders_lounge_token(request)
+    request_id = base.get_task_id(request)
+    task_id = str(body.job_id)
+
+    with _builders_lounge_task_lock:
+        existing_task = sm.state.get_task(task_id)
+        if existing_task is not None:
+            return _builders_lounge_task_response(existing_task, request_id)
+
+        params = _builders_lounge_video_params(body, request_id)
+        sm.state.update_task(task_id)
+        try:
+            task_manager.add_task(
+                tm.start, task_id=task_id, params=params, stop_at="video"
+            )
+        except TaskQueueFullError as exc:
+            sm.state.delete_task(task_id)
+            raise HttpException(
+                task_id=task_id,
+                status_code=429,
+                message=f"{request_id}: {str(exc)}",
+            ) from exc
+        except Exception:
+            sm.state.delete_task(task_id)
+            raise
+
+    logger.success(
+        "Builders Lounge task created: "
+        f"task_id={task_id}, scene_count={len(body.scenes)}"
+    )
+    return _builders_lounge_task_response(sm.state.get_task(task_id), request_id)
+
+
+@router.get(
+    "/builders-lounge/tasks/{task_id}",
+    response_model=BuildersLoungeTaskResponse,
+    summary="Query a private Builders Lounge render task",
+)
+def get_builders_lounge_task(
+    request: Request, task_id: str = Path(..., description="Lounge job UUID")
+):
+    _verify_builders_lounge_token(request)
+    request_id = base.get_task_id(request)
+    task = sm.state.get_task(task_id)
+    if task is None:
+        raise HttpException(
+            task_id=task_id,
+            status_code=404,
+            message=f"{request_id}: task not found",
+        )
+    return _builders_lounge_task_response(task, request_id)
 
 
 @router.post("/subtitle", response_model=TaskResponse, summary="Generate subtitle only")
