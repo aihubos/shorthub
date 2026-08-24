@@ -1,7 +1,9 @@
+import json
 import runpy
 from pathlib import Path
 from unittest.mock import patch
 
+from app import asgi
 from app.config import config
 
 
@@ -28,3 +30,35 @@ def test_main_starts_uvicorn_with_runtime_config():
         reload=True,
         log_level="warning",
     )
+
+
+def test_builders_lounge_healthz_reports_ready_with_boolean_checks_only():
+    checks = {"renderTokenConfigured": True, "localMaterialsReady": True}
+
+    with patch.object(
+        asgi, "builders_lounge_renderer_readiness", return_value=checks
+    ):
+        response = asgi.builders_lounge_healthz()
+
+    assert response.status_code == 200
+    assert json.loads(response.body) == {
+        "status": "ready",
+        "contractVersion": "builders-lounge-renderer-v1",
+        "checks": checks,
+    }
+
+
+def test_builders_lounge_healthz_reports_unavailable_when_a_check_fails():
+    checks = {"renderTokenConfigured": True, "localMaterialsReady": False}
+
+    with patch.object(
+        asgi, "builders_lounge_renderer_readiness", return_value=checks
+    ):
+        response = asgi.builders_lounge_healthz()
+
+    assert response.status_code == 503
+    assert json.loads(response.body) == {
+        "status": "unavailable",
+        "contractVersion": "builders-lounge-renderer-v1",
+        "checks": checks,
+    }
