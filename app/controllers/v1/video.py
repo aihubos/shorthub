@@ -172,8 +172,8 @@ def _verify_builders_lounge_token(request: Request) -> None:
         )
 
 
-def _builders_lounge_material_names(scene_count: int, request_id: str) -> list[str]:
-    """Resolve at least two server-owned local materials without exposing paths."""
+def _builders_lounge_safe_material_names() -> list[str]:
+    """Return configured server-owned material names without exposing paths."""
     local_videos_dir = utils.storage_dir("local_videos", create=True)
     configured_names = [
         item.strip()
@@ -204,9 +204,14 @@ def _builders_lounge_material_names(scene_count: int, request_id: str) -> list[s
             continue
         safe_names.append(os.path.basename(resolved_path))
 
+    return list(dict.fromkeys(safe_names))
+
+
+def _builders_lounge_material_names(scene_count: int, request_id: str) -> list[str]:
+    """Resolve at least two server-owned local materials without exposing paths."""
+    safe_names = _builders_lounge_safe_material_names()
     # A single source cannot demonstrate the requested scene change. Repeat the
     # safe list only after two distinct materials have been established.
-    safe_names = list(dict.fromkeys(safe_names))
     if len(safe_names) < 2:
         raise HttpException(
             task_id=request_id,
@@ -215,6 +220,21 @@ def _builders_lounge_material_names(scene_count: int, request_id: str) -> list[s
         )
 
     return [safe_names[index % len(safe_names)] for index in range(scene_count)]
+
+
+def builders_lounge_renderer_readiness() -> dict[str, bool]:
+    """Return renderer readiness without exposing token or material details."""
+    try:
+        local_materials_ready = len(_builders_lounge_safe_material_names()) >= 2
+    except OSError:
+        local_materials_ready = False
+
+    return {
+        "renderTokenConfigured": bool(
+            os.getenv(_BUILDERS_LOUNGE_RENDER_TOKEN_ENV, "").strip()
+        ),
+        "localMaterialsReady": local_materials_ready,
+    }
 
 
 def _builders_lounge_video_params(

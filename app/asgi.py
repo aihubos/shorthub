@@ -11,9 +11,27 @@ from fastapi.staticfiles import StaticFiles
 from loguru import logger
 
 from app.config import config
+from app.controllers.v1.video import builders_lounge_renderer_readiness
 from app.models.exception import HttpException
 from app.router import root_api_router
 from app.utils import utils
+
+
+_BUILDERS_LOUNGE_RENDERER_CONTRACT_VERSION = "builders-lounge-renderer-v1"
+
+
+def builders_lounge_healthz() -> JSONResponse:
+    """Return the private renderer readiness contract without secret values."""
+    checks = builders_lounge_renderer_readiness()
+    ready = all(checks.values())
+    return JSONResponse(
+        status_code=200 if ready else 503,
+        content={
+            "status": "ready" if ready else "unavailable",
+            "contractVersion": _BUILDERS_LOUNGE_RENDERER_CONTRACT_VERSION,
+            "checks": checks,
+        },
+    )
 
 
 @asynccontextmanager
@@ -61,6 +79,15 @@ def get_application() -> FastAPI:
         version=config.project_version,
         debug=False,
         lifespan=application_lifespan,
+    )
+    # Register this route before the root StaticFiles mount below. Otherwise a
+    # missing static asset could handle the health probe instead of the API.
+    instance.add_api_route(
+        "/healthz",
+        builders_lounge_healthz,
+        methods=["GET"],
+        response_class=JSONResponse,
+        include_in_schema=False,
     )
     instance.include_router(root_api_router)
     instance.add_exception_handler(HttpException, exception_handler)
