@@ -262,11 +262,6 @@ class TestVideoControllerTasks(unittest.TestCase):
                 clear=False,
             ),
             patch.object(video_controller.sm.state, "get_task", return_value=task),
-            patch.object(
-                video_controller,
-                "_task_file_to_uri",
-                return_value="/tasks/job/final-1.mp4",
-            ),
         ):
             response = video_controller.get_builders_lounge_task(
                 request, task_id=task["task_id"]
@@ -278,10 +273,55 @@ class TestVideoControllerTasks(unittest.TestCase):
                 "taskId": task["task_id"],
                 "state": "completed",
                 "progress": 100,
-                "videoUrl": "/tasks/job/final-1.mp4",
+                "videoUrl": (
+                    "/api/v1/builders-lounge/tasks/"
+                    f"{task['task_id']}/video"
+                ),
                 "mediaType": "video/mp4",
             },
         )
+
+    def test_builders_lounge_video_download_is_token_protected_and_task_scoped(self):
+        """완성 MP4는 공개 정적 경로가 아니라 인증된 작업 전용 경로로만 전달한다."""
+        task_id = "6c85c8cc-a77a-42b9-bc30-947815aa0558"
+        task_dir = utils.task_dir(task_id)
+        video_path = os.path.join(task_dir, "final-1.mp4")
+        Path(video_path).write_bytes(b"private-mp4")
+        task = {
+            "task_id": task_id,
+            "state": const.TASK_STATE_COMPLETE,
+            "progress": 100,
+            "videos": [video_path],
+        }
+        authorized = SimpleNamespace(
+            headers={
+                "x-task-id": "request-123",
+                "authorization": "Bearer local-test-token",
+            }
+        )
+        unauthorized = SimpleNamespace(headers={"x-task-id": "request-123"})
+
+        try:
+            with (
+                patch.dict(
+                    os.environ,
+                    {video_controller._BUILDERS_LOUNGE_RENDER_TOKEN_ENV: "local-test-token"},
+                    clear=False,
+                ),
+                patch.object(video_controller.sm.state, "get_task", return_value=task),
+            ):
+                response = video_controller.get_builders_lounge_video(
+                    authorized, task_id=task_id
+                )
+                self.assertEqual(response.media_type, "video/mp4")
+                self.assertEqual(Path(response.path), Path(video_path))
+                with self.assertRaises(HttpException) as raised:
+                    video_controller.get_builders_lounge_video(
+                        unauthorized, task_id=task_id
+                    )
+            self.assertEqual(raised.exception.status_code, 401)
+        finally:
+            shutil.rmtree(task_dir, ignore_errors=True)
 
     def test_create_task_removes_state_when_queue_is_full(self):
         """队列已满时必须回滚刚创建的状态，并向调用方返回 429。"""

@@ -254,12 +254,9 @@ def _builders_lounge_task_response(task: dict, request_id: str) -> dict:
     video_url = None
     videos = task.get("videos") or []
     if videos:
-        video_url = _task_file_to_uri(
-            videos[0],
-            config.app.get("endpoint", "").rstrip("/"),
-            utils.task_dir(),
-            request_id,
-        )
+        endpoint = config.app.get("endpoint", "").rstrip("/")
+        protected_path = f"/api/v1/builders-lounge/tasks/{task['task_id']}/video"
+        video_url = f"{endpoint}{protected_path}" if endpoint else protected_path
 
     return utils.get_response(
         200,
@@ -388,6 +385,47 @@ def get_builders_lounge_task(
             message=f"{request_id}: task not found",
         )
     return _builders_lounge_task_response(task, request_id)
+
+
+@router.get(
+    "/builders-lounge/tasks/{task_id}/video",
+    summary="Download a private Builders Lounge MP4",
+)
+def get_builders_lounge_video(
+    request: Request, task_id: str = Path(..., description="Lounge job UUID")
+):
+    _verify_builders_lounge_token(request)
+    request_id = base.get_task_id(request)
+    task = sm.state.get_task(task_id)
+    if task is None:
+        raise HttpException(
+            task_id=task_id,
+            status_code=404,
+            message=f"{request_id}: task not found",
+        )
+    videos = task.get("videos") or []
+    if task.get("state") != const.TASK_STATE_COMPLETE or not videos:
+        raise HttpException(
+            task_id=task_id,
+            status_code=409,
+            message=f"{request_id}: task video is not ready",
+        )
+
+    task_directory = utils.task_dir(task_id)
+    video_path = _resolve_path_within_directory(
+        task_directory, videos[0], request_id
+    )
+    if pathlib.Path(video_path).suffix.lower() != ".mp4":
+        raise HttpException(
+            task_id=task_id,
+            status_code=415,
+            message=f"{request_id}: task video is not an MP4",
+        )
+    return FileResponse(
+        path=video_path,
+        media_type=_BUILDERS_LOUNGE_MEDIA_TYPE,
+        filename=f"builders-lounge-{task_id}.mp4",
+    )
 
 
 @router.post("/subtitle", response_model=TaskResponse, summary="Generate subtitle only")
